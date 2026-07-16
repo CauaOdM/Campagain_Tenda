@@ -30,15 +30,10 @@ else:
     #input de arquivo que vai para o banco de dados
     upload = st.file_uploader("Faça o upload de arquivo", type=["xlsx"])
     if upload is not None:
-
-        df = load_data(upload)
-
-        st.success("Dados enviados para o banco com sucesso.")
-        st.dataframe(df, use_container_width=True, hide_index=True)
-
-
         data_load_state = st.text('Loading data...')
         time.sleep(1.75)
         st.success('Dados obtidos com sucesso!')
+        df = load_data(upload)
+        st.dataframe(df, use_container_width=True, hide_index=True)
 
     st.button("Log out", on_click=st.logout)
