@@ -1,2 +1,4 @@
 venv
 app/.streamlit/secrets.toml
+__pycache__
+app/mensuração-crm.db
