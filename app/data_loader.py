@@ -1,6 +1,7 @@
+import re
+from datetime import date
+
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 
 def _limpar_texto(serie):
     """Remove espaços comuns e o espaço invisível usado em algumas células."""
@@ -16,31 +17,59 @@ def _voltar_ao_inicio(arquivo):
         arquivo.seek(0)
 
 
+def _infer_report_month(arquivo):
+    nome = getattr(arquivo, "name", "") or ""
+    padroes = [
+        r"(?P<ano>20\d{2})[-_/](?P<mes>0?[1-9]|1[0-2])",
+        r"(?P<mes>0?[1-9]|1[0-2])[-_/](?P<ano>20\d{2})",
+    ]
+
+    for padrao in padroes:
+        match = re.search(padrao, nome)
+        if match:
+            return date(int(match.group("ano")), int(match.group("mes")), 1)
+
+    return date.today().replace(day=1)
+
+
 def load_data_resultados(arquivo):
-            # Lê a aba 'RESULTADOS' (header=1 pula a primeira linha vazia)
-            df_1 = pd.read_excel(arquivo, sheet_name="RESULTADOS", header=1)
-            # Limpa espaços nos nomes das colunas
-            df_1.columns = df_1.columns.str.strip()
-            
-            # Renomeia colunas para melhor exibição e manipulação
-            df_1 = df_1.rename(columns={
-                'Rótulos de Linha': 'Campanha',
-                'Soma de QTD_VENDA': 'Qtd Venda',
-                'Soma de DISPARADOS': 'Disparados',
-                'Soma de ENTREGUES': 'Entregues',
-                'Média de TAXA_ENTREGA': 'Taxa de Entrega',
-                'Soma de ABERTURAS': 'Aberturas',
-                'Soma de CLIQUES': 'Cliques',
-                'Soma de QTDE_CLIENTE': 'Clientes',
-                'VALOR_VENDA': 'Receita',
-                'VALOR_DESCONTO': 'Desconto'
-            })
-            # Remove linhas vazias
-            df_1 = df_1.dropna(subset=['Campanha'])
-            # CORREÇÃO: Remove a linha de "Total Geral" para que os valores dos KPIs fiquem exatos
-            df_1 = df_1[df_1['Campanha'] != 'Total Geral']
-            
-            return df_1
+    _voltar_ao_inicio(arquivo)
+
+    df_1 = pd.read_excel(arquivo, sheet_name="RESULTADOS", header=1)
+    df_1.columns = df_1.columns.str.strip()
+
+    df_1 = df_1.rename(
+        columns={
+            "Rótulos de Linha": "Campanha",
+            "Soma de QTD_VENDA": "Qtd Venda",
+            "Soma de DISPARADOS": "Disparados",
+            "Soma de ENTREGUES": "Entregues",
+            "Média de TAXA_ENTREGA": "Taxa de Entrega",
+            "Soma de ABERTURAS": "Aberturas",
+            "Soma de CLIQUES": "Cliques",
+            "Soma de QTDE_CLIENTE": "Clientes",
+            "VALOR_VENDA": "Receita",
+            "VALOR_DESCONTO": "Desconto",
+        }
+    )
+    df_1 = df_1.dropna(subset=["Campanha"])
+    df_1 = df_1[df_1["Campanha"] != "Total Geral"]
+
+    for coluna in [
+        "Qtd Venda",
+        "Disparados",
+        "Entregues",
+        "Aberturas",
+        "Cliques",
+        "Clientes",
+        "Receita",
+        "Desconto",
+        "Taxa de Entrega",
+    ]:
+        if coluna in df_1.columns:
+            df_1[coluna] = pd.to_numeric(df_1[coluna], errors="coerce").fillna(0)
+
+    return df_1
 
 def load_data_recomposicao(arquivo):
     """
@@ -169,6 +198,18 @@ def load_data_recomposicao(arquivo):
         .reset_index(drop=True)
     )
 
+
+def load_workbook_bundle(arquivo):
+    report_month = _infer_report_month(arquivo)
+    df_resultados = load_data_resultados(arquivo)
+    df_recomposicao = load_data_recomposicao(arquivo)
+
+    return {
+        "report_month": report_month,
+        "df_resultados": df_resultados,
+        "df_recomposicao": df_recomposicao,
+    }
+
 def load_data_campanhas(arquivo):
         df_2 = pd.read_excel(arquivo, sheet_name = "CAMPANHAS", header = 1)
         df_2 = df_2.columns.str.strip()
@@ -178,7 +219,7 @@ def load_data_campanhas(arquivo):
         ])
 
 def formata_brl(valor):
-                return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 def formata_int(valor):
     return f"{valor:,.0f}".replace(",", ".")
