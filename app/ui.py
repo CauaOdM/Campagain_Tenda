@@ -1,3 +1,4 @@
+from html import escape
 from pathlib import Path
 
 import pandas as pd
@@ -47,8 +48,9 @@ st.markdown(
             --text: #24324a;
             --text-muted: #667085;
             --border: rgba(28, 60, 108, 0.14);
-            --shadow: 0 4px 16px rgba(28, 60, 108, 0.07);
-            --shadow-hover: 0 8px 24px rgba(28, 60, 108, 0.11);
+            --shadow: 0 6px 20px rgba(28, 60, 108, 0.07);
+            --shadow-hover: 0 10px 28px rgba(28, 60, 108, 0.11);
+            --radius: 14px;
         }}
 
         /* Estrutura geral */
@@ -76,9 +78,12 @@ st.markdown(
         }}
 
         [data-testid="stMainBlockContainer"] {{
-            max-width: 1440px;
-            padding-top: 2.25rem;
+            width: 100%;
+            max-width: 1480px;
+            padding-top: 1.75rem;
+            padding-right: clamp(1rem, 2.4vw, 2.5rem);
             padding-bottom: 4rem;
+            padding-left: clamp(1rem, 2.4vw, 2.5rem);
         }}
 
         /* Sidebar */
@@ -93,7 +98,9 @@ st.markdown(
         }}
 
         [data-testid="stSidebar"] > div {{
-            padding-top: 1rem;
+            padding-top: 1.25rem;
+            padding-right: 1rem;
+            padding-left: 1rem;
         }}
 
         [data-testid="stSidebar"] * {{
@@ -105,6 +112,17 @@ st.markdown(
         [data-testid="stSidebar"] h3 {{
             color: #ffffff;
             letter-spacing: -0.01em;
+        }}
+
+        [data-testid="stSidebar"] h1 {{
+            margin-bottom: 0.85rem;
+            padding-bottom: 0;
+            border-bottom: 0;
+            font-size: 1.35rem;
+        }}
+
+        [data-testid="stSidebar"] h1::after {{
+            display: none;
         }}
 
         [data-testid="stSidebar"] hr {{
@@ -159,10 +177,12 @@ st.markdown(
 
         h1 {{
             position: relative;
-            margin-bottom: 1.75rem;
+            margin-bottom: 1.35rem;
             padding-bottom: 0.8rem;
             border-bottom: 1px solid rgba(28, 60, 108, 0.14);
+            font-size: clamp(1.85rem, 3vw, 2.75rem);
             font-weight: 750;
+            line-height: 1.12;
         }}
 
         h1::after {{
@@ -178,6 +198,7 @@ st.markdown(
 
         h2 {{
             margin-top: 1.5rem;
+            font-size: clamp(1.3rem, 2vw, 1.65rem);
             font-weight: 720;
         }}
 
@@ -194,12 +215,12 @@ st.markdown(
         /* Cards de métricas */
         [data-testid="stMetric"] {{
             position: relative;
-            min-height: 132px;
-            padding: 1.15rem 1.2rem;
+            min-height: 142px;
+            padding: 1.2rem 1.25rem 1rem;
             overflow: hidden;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
             transition:
                 transform 160ms ease,
@@ -231,35 +252,188 @@ st.markdown(
 
         [data-testid="stMetricLabel"] {{
             color: var(--text-muted);
-            font-size: 0.78rem;
+            font-size: clamp(0.72rem, 0.85vw, 0.8rem);
             font-weight: 700;
             letter-spacing: 0.045em;
+            line-height: 1.35;
             text-transform: uppercase;
         }}
 
         [data-testid="stMetricValue"] {{
             color: var(--tenda-blue);
-            font-size: 1.85rem;
+            font-size: clamp(1.45rem, 2.15vw, 1.95rem);
             font-weight: 750;
             letter-spacing: -0.035em;
+            line-height: 1.1;
+            white-space: nowrap;
         }}
 
         [data-testid="stMetricDelta"] {{
             color: var(--tenda-gray-blue);
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 600;
+        }}
+
+        /* Grade principal de KPIs: mantém proporções e alinhamento em qualquer tela. */
+        .kpi-grid {{
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 0.9rem;
+            margin: 1.15rem 0 1.9rem;
+        }}
+
+        .kpi-card {{
+            position: relative;
+            display: flex;
+            min-width: 0;
+            min-height: 154px;
+            flex-direction: column;
+            padding: 1.2rem 1.15rem 1rem;
+            overflow: hidden;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+        }}
+
+        .kpi-card::before {{
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--tenda-blue) 0 78%, var(--tenda-red) 78% 100%);
+        }}
+
+        .kpi-card:hover {{
+            transform: translateY(-2px);
+            border-color: rgba(28, 60, 108, 0.24);
+            box-shadow: var(--shadow-hover);
+        }}
+
+        .kpi-label {{
+            min-height: 2.55em;
+            color: var(--text-muted);
+            font-size: clamp(0.69rem, 0.82vw, 0.78rem);
+            font-weight: 750;
+            letter-spacing: 0.04em;
+            line-height: 1.3;
+            text-transform: uppercase;
+        }}
+
+        .kpi-value {{
+            margin-top: 0.45rem;
+            overflow: hidden;
+            color: var(--tenda-blue);
+            font-size: clamp(1.25rem, 1.65vw, 1.75rem);
+            font-weight: 780;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }}
+
+        .kpi-detail {{
+            align-self: flex-start;
+            margin-top: auto;
+            padding-top: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.76rem;
+            font-weight: 650;
+            line-height: 1.25;
+        }}
+
+        .kpi-detail.positive,
+        .kpi-detail.warning {{
+            padding: 0.28rem 0.62rem;
+            border-radius: 999px;
+        }}
+
+        .kpi-detail.positive {{
+            background: #e7f6ec;
+            color: #187b43;
+        }}
+
+        .kpi-detail.warning {{
+            background: #fff3df;
+            color: #9a5b00;
+        }}
+
+        /* Cabeçalho compacto do dashboard. */
+        .dashboard-intro {{
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1.5rem;
+            margin: 0.65rem 0 0;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }}
+
+        .dashboard-intro h1 {{
+            margin: 0.22rem 0 0.35rem;
+            padding: 0;
+            border: 0;
+            font-size: clamp(1.8rem, 3vw, 2.7rem);
+        }}
+
+        .dashboard-intro h1::after {{
+            display: none;
+        }}
+
+        .dashboard-intro p {{
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.94rem;
+            line-height: 1.45;
+        }}
+
+        .dashboard-eyebrow {{
+            color: var(--tenda-red);
+            font-size: 0.73rem;
+            font-weight: 800;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+        }}
+
+        .period-chip {{
+            display: flex;
+            min-width: 175px;
+            flex-direction: column;
+            flex: 0 0 auto;
+            padding: 0.7rem 0.9rem;
+            background: rgba(28, 60, 108, 0.06);
+            border: 1px solid rgba(28, 60, 108, 0.11);
+            border-radius: 10px;
+            text-align: right;
+        }}
+
+        .period-chip span {{
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 750;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }}
+
+        .period-chip strong {{
+            margin-top: 0.12rem;
+            color: var(--tenda-blue);
+            font-size: 0.96rem;
         }}
 
         /* Containers e cards de conteúdo */
         [data-testid="stVerticalBlockBorderWrapper"] {{
             background: var(--surface);
             border: 1px solid var(--border) !important;
-            border-radius: 10px;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
         }}
 
         [data-testid="stVerticalBlockBorderWrapper"] > div {{
-            padding: 0.35rem;
+            padding: 0.9rem 1rem 0.75rem;
         }}
 
         /* Gráficos */
@@ -267,9 +441,9 @@ st.markdown(
         [data-testid="stVegaLiteChart"] {{
             overflow: hidden;
             background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            box-shadow: var(--shadow);
+            border: 0;
+            border-radius: 8px;
+            box-shadow: none;
         }}
 
         /* Tabelas */
@@ -277,7 +451,7 @@ st.markdown(
             overflow: hidden;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
         }}
 
@@ -397,10 +571,29 @@ st.markdown(
         }}
 
         div[data-testid="stImage"] img {{
-            border-radius: 8px;
+            width: 100%;
+            max-height: 176px;
+            border: 1px solid rgba(28, 60, 108, 0.10);
+            border-radius: var(--radius);
+            object-fit: cover;
+            object-position: center;
         }}
 
         /* Responsividade */
+        @media (max-width: 1500px) {{
+            .kpi-grid {{
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+            }}
+
+            .kpi-card {{
+                grid-column: span 2;
+            }}
+
+            .kpi-card:nth-child(4) {{
+                grid-column: 2 / span 2;
+            }}
+        }}
+
         @media (max-width: 900px) {{
             [data-testid="stMainBlockContainer"] {{
                 padding-top: 1.25rem;
@@ -414,6 +607,41 @@ st.markdown(
 
             [data-testid="stMetricValue"] {{
                 font-size: 1.55rem;
+            }}
+
+            .dashboard-intro {{
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 0.8rem;
+            }}
+
+            .period-chip {{
+                min-width: 0;
+                width: 100%;
+                text-align: left;
+            }}
+
+            .kpi-grid {{
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }}
+
+            .kpi-card,
+            .kpi-card:nth-child(4) {{
+                grid-column: auto;
+            }}
+        }}
+
+        @media (max-width: 560px) {{
+            .kpi-grid {{
+                grid-template-columns: 1fr;
+            }}
+
+            .kpi-card {{
+                min-height: 132px;
+            }}
+
+            .kpi-label {{
+                min-height: auto;
             }}
         }}
     </style>
@@ -432,14 +660,24 @@ def _style_figure(fig, height):
         template="plotly_white",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="#ffffff",
-        font={"color": TENDA_COLORS["azul"], "family": "Arial, sans-serif"},
+        font={"color": TENDA_COLORS["azul"], "family": "Inter, Segoe UI, Arial, sans-serif", "size": 12},
         legend_title_text="",
-        legend={"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "right", "x": 1},
-        margin={"t": 44, "l": 18, "r": 18, "b": 32},
+        legend={"orientation": "h", "yanchor": "bottom", "y": 1.04, "xanchor": "right", "x": 1},
+        margin={"t": 40, "l": 32, "r": 24, "b": 44},
         hoverlabel={"bgcolor": "#ffffff", "font_color": TENDA_COLORS["azul"]},
     )
-    fig.update_xaxes(showgrid=False, linecolor=TENDA_COLORS["cinza_claro"], tickfont={"color": TENDA_COLORS["azul_cinza"]})
-    fig.update_yaxes(gridcolor="rgba(209, 196, 204, 0.42)", zeroline=False, tickfont={"color": TENDA_COLORS["azul_cinza"]})
+    fig.update_xaxes(
+        automargin=True,
+        showgrid=False,
+        linecolor=TENDA_COLORS["cinza_claro"],
+        tickfont={"color": TENDA_COLORS["azul_cinza"]},
+    )
+    fig.update_yaxes(
+        automargin=True,
+        gridcolor="rgba(209, 196, 204, 0.42)",
+        zeroline=False,
+        tickfont={"color": TENDA_COLORS["azul_cinza"]},
+    )
     return fig
 
 
@@ -521,6 +759,33 @@ def _status_label(roi):
     return "Atenção"
 
 
+def _status_tone(roi):
+    if roi >= 8:
+        return "positive"
+    if roi < 4:
+        return "warning"
+    return "neutral"
+
+
+def _metric_card(label, value, detail=None, tone="neutral"):
+    detail_html = ""
+    if detail:
+        detail_html = f'<div class="kpi-detail {escape(tone)}">{escape(detail)}</div>'
+
+    return f"""
+        <article class="kpi-card">
+            <div class="kpi-label">{escape(label)}</div>
+            <div class="kpi-value" title="{escape(value)}">{escape(value)}</div>
+            {detail_html}
+        </article>
+    """
+
+
+def _render_metric_grid(cards):
+    cards_html = "".join(_metric_card(**card) for card in cards)
+    st.markdown(f'<section class="kpi-grid">{cards_html}</section>', unsafe_allow_html=True)
+
+
 def _safe_month_options(brand_name):
     month_options = [month.strftime("%m/%Y") for month in list_brand_months(brand_name)]
     if not month_options:
@@ -581,15 +846,31 @@ def dashboard():
     safra_end = payload["safra_end"]
     metrics = payload["metrics"]
 
-    st.image(str(logo_path), use_container_width=True)
-    st.title(f"TENDA - {st.session_state.selected_brand.upper()}")
-    st.subheader(f"Bem vindo(a), {st.user.name}!")
-
     if safra_start and safra_end:
         caption_period = f"{pd.Timestamp(safra_start).strftime('%m/%Y')} - {pd.Timestamp(safra_end).strftime('%m/%Y')}"
     else:
         caption_period = "Sem período disponível"
-    st.caption(f"Marca: {st.session_state.selected_brand} · Safra 12M: {caption_period}")
+
+    display_name = getattr(st.user, "name", None) or "usuário"
+    brand_name = st.session_state.selected_brand.upper()
+
+    st.image(str(logo_path), use_container_width=True)
+    st.markdown(
+        f"""
+        <section class="dashboard-intro">
+            <div>
+                <span class="dashboard-eyebrow">Painel de CRM · Visão executiva</span>
+                <h1>TENDA — {escape(brand_name)}</h1>
+                <p>Bem-vindo(a), {escape(display_name)}. Acompanhe o desempenho consolidado das campanhas.</p>
+            </div>
+            <div class="period-chip">
+                <span>Safra 12 meses</span>
+                <strong>{escape(caption_period)}</strong>
+            </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
     if brand_df.empty:
         st.info("Nenhum dado encontrado ainda. Faça upload de um XLSX para popular esta marca.")
@@ -600,43 +881,44 @@ def dashboard():
     geral_clientes = int(geral_df["Clientes"].sum()) if not geral_df.empty else 0
     geral_disparados = int(geral_df["Disparados"].sum()) if not geral_df.empty else 0
 
-    col1, col2, col3 = st.columns(3)
-    col4, col5 = st.columns(2)
-    col1.metric(
-        "Receita Total CRM",
-        formata_brl(metrics["receita_total"]),
-        None if not geral_receita else f"vs geral: {_comparison_delta(metrics['receita_total'], geral_receita):+.1%}",
-    )
-    col2.metric("ROI Global do Desconto", f"{metrics['roi']:.2f}x", _status_label(metrics["roi"]))
-    col3.metric(
-        "Share Médio no Faturamento",
-        f"{metrics['share_faturamento'] * 100:.2f}%".replace(".", ","),
-        None if not geral_receita else f"geral: {formata_brl(geral_receita)}",
-    )
-    col4.metric(
-        "Investimento Concedido",
-        formata_brl(metrics["desconto_total"]),
-        None if not geral_desconto else f"vs geral: {_comparison_delta(metrics['desconto_total'], geral_desconto):+.1%}",
-    )
-    col5.metric(
-        "Base Única Impactada",
-        formata_int(metrics["base_unica"]),
-        None if not geral_clientes else f"vs geral: {_comparison_delta(metrics['base_unica'], geral_clientes):+.1%}",
+    _render_metric_grid(
+        [
+            {
+                "label": "Receita Total CRM",
+                "value": formata_brl(metrics["receita_total"]),
+                "detail": None
+                if not geral_receita
+                else f"vs. geral {_comparison_delta(metrics['receita_total'], geral_receita):+.1%}",
+            },
+            {
+                "label": "ROI Global do Desconto",
+                "value": f"{metrics['roi']:.2f}x",
+                "detail": _status_label(metrics["roi"]),
+                "tone": _status_tone(metrics["roi"]),
+            },
+            {
+                "label": "Share Médio no Faturamento",
+                "value": f"{metrics['share_faturamento'] * 100:.2f}%".replace(".", ","),
+                "detail": None if not geral_receita else f"Geral {formata_brl(geral_receita)}",
+            },
+            {
+                "label": "Investimento Concedido",
+                "value": formata_brl(metrics["desconto_total"]),
+                "detail": None
+                if not geral_desconto
+                else f"vs. geral {_comparison_delta(metrics['desconto_total'], geral_desconto):+.1%}",
+            },
+            {
+                "label": "Base Única Impactada",
+                "value": formata_int(metrics["base_unica"]),
+                "detail": None
+                if not geral_clientes
+                else f"vs. geral {_comparison_delta(metrics['base_unica'], geral_clientes):+.1%}",
+            },
+        ]
     )
 
-    st.markdown(
-        f"""
-        <div style="display:inline-flex;align-items:center;gap:.5rem;margin:.35rem 0 1.15rem;
-                    padding:.42rem .8rem;border-radius:999px;background:rgba(28,60,108,.08);
-                    color:{TENDA_COLORS['azul']};font-weight:700;">
-            <span style="width:.55rem;height:.55rem;border-radius:50%;background:{TENDA_COLORS['vermelho']};"></span>
-            Status: {_status_label(metrics['roi'])}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    col_graf1, col_graf2 = st.columns(2)
+    col_graf1, col_graf2 = st.columns(2, gap="large")
     with col_graf1:
         with st.container(border=True):
             st.subheader("Evolução Mensal da Marca")
@@ -673,7 +955,7 @@ def dashboard():
             )
             st.plotly_chart(_style_figure(fig_comp, 340), use_container_width=True)
 
-    col_graf3, col_graf4 = st.columns(2)
+    col_graf3, col_graf4 = st.columns(2, gap="large")
     with col_graf3:
         with st.container(border=True):
             st.subheader("Receita e Verba por Campanha")
@@ -685,6 +967,7 @@ def dashboard():
                 barmode="group",
                 color_discrete_sequence=[TENDA_COLORS["azul"], TENDA_COLORS["vermelho"]],
             )
+            fig_receita.update_xaxes(tickangle=-24)
             st.plotly_chart(_style_figure(fig_receita, 340), use_container_width=True)
 
     with col_graf4:
@@ -754,13 +1037,13 @@ def dashboard():
             taxa_desconto_ponderada = desconto_total_comp / receita_total_comp if receita_total_comp else 0
             categoria_lider = df_comp.loc[df_comp["Receita"].idxmax(), "Categoria"]
 
-            col_a, col_b, col_c, col_d = st.columns(4)
+            col_a, col_b, col_c, col_d = st.columns(4, gap="medium")
             col_a.metric("Receita", formata_brl(receita_total_comp))
             col_b.metric("Desconto", formata_brl(desconto_total_comp))
             col_c.metric("Taxa de desconto", f"{taxa_desconto_ponderada * 100:.2f}%".replace(".", ","))
             col_d.metric("Categoria líder", categoria_lider)
 
-            col_left, col_right = st.columns(2)
+            col_left, col_right = st.columns(2, gap="large")
             with col_left:
                 with st.container(border=True):
                     fig_composicao = px.treemap(

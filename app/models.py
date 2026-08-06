@@ -43,3 +43,5 @@ class CompositionResult(Base):
     taxa_desconto = Column(Float, default=0.0)
     participacao_receita = Column(Float, default=0.0)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+
