@@ -32,7 +32,7 @@ TENDA_COLORS = {
     "cinza_azulado": "#8c8cac",
 }
 
-st.html(
+st.markdown(
     f"""
     <style>
         :root {{
@@ -677,6 +677,7 @@ st.html(
         }}
     </style>
     """,
+    unsafe_allow_html=True,
 )
 
 BASE_DIR = Path(__file__).resolve().parent
