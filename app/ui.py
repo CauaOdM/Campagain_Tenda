@@ -1,4 +1,3 @@
-from html import escape
 from pathlib import Path
 
 import pandas as pd
@@ -32,8 +31,7 @@ TENDA_COLORS = {
     "cinza_azulado": "#8c8cac",
 }
 
-st.markdown(
-    f"""
+APP_CSS = f"""
     <style>
         :root {{
             --tenda-blue: {TENDA_COLORS["azul"]};
@@ -676,9 +674,12 @@ st.markdown(
             }}
         }}
     </style>
-    """,
-    unsafe_allow_html=True,
-)
+    """
+
+
+def _apply_styles():
+    """Reinjeta o CSS em toda execução do script do Streamlit."""
+    st.markdown(APP_CSS, unsafe_allow_html=True)
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
@@ -770,6 +771,7 @@ def logout():
 
 
 def login_screen():
+    _apply_styles()
     st.image(str(logo_path), use_container_width=True)
     st.header("Olá, tudo bem?")
     st.subheader("Por favor, faça seu login para acessar a dashboard.")
@@ -798,23 +800,36 @@ def _status_tone(roi):
     return "neutral"
 
 
-def _metric_card(label, value, detail=None, tone="neutral"):
-    detail_html = ""
-    if detail:
-        detail_html = f'<div class="kpi-detail {escape(tone)}">{escape(detail)}</div>'
+def _render_metric(column, card):
+    """Renderiza um KPI nativo, sem depender de HTML concatenado."""
+    delta_color = {
+        "positive": "normal",
+        "warning": "inverse",
+    }.get(card.get("tone"), "off")
 
-    return (
-        '<article class="kpi-card">'
-        f'<div class="kpi-label">{escape(label)}</div>'
-        f'<div class="kpi-value" title="{escape(value)}">{escape(value)}</div>'
-        f'{detail_html}'
-        '</article>'
-    )
+    with column:
+        st.metric(
+            label=card["label"],
+            value=card["value"],
+            delta=card.get("detail"),
+            delta_color=delta_color,
+            border=True,
+        )
 
 
 def _render_metric_grid(cards):
-    cards_html = "".join(_metric_card(**card) for card in cards)
-    st.html(f'<section class="kpi-grid">{cards_html}</section>')
+    """Organiza os cinco KPIs em duas linhas equilibradas (3 + 2)."""
+    first_row = st.columns(3, gap="medium")
+    for column, card in zip(first_row, cards[:3]):
+        _render_metric(column, card)
+
+    remaining_cards = cards[3:]
+    if remaining_cards:
+        # Os pesos mantêm os dois cards inferiores com a mesma largura dos
+        # superiores e centralizam a linha sem recorrer a CSS/HTML frágil.
+        second_row = st.columns([1, 2, 2, 1], gap="medium")
+        for column, card in zip(second_row[1:3], remaining_cards):
+            _render_metric(column, card)
 
 
 def _safe_month_options(brand_name):
@@ -827,6 +842,7 @@ def _safe_month_options(brand_name):
 
 
 def dashboard():
+    _apply_styles()
     initialize_session()
 
     with st.sidebar:
@@ -886,21 +902,13 @@ def dashboard():
     brand_name = st.session_state.selected_brand.upper()
 
     st.image(str(logo_path), use_container_width=True)
-    st.html(
-        f"""
-        <section class="dashboard-intro">
-            <div>
-                <span class="dashboard-eyebrow">Painel de CRM · Visão executiva</span>
-                <h1>TENDA — {escape(brand_name)}</h1>
-                <p>Bem-vindo(a), {escape(display_name)}. Acompanhe o desempenho consolidado das campanhas.</p>
-            </div>
-            <div class="period-chip">
-                <span>Safra 12 meses</span>
-                <strong>{escape(caption_period)}</strong>
-            </div>
-        </section>
-        """,
+    st.caption("PAINEL DE CRM · VISÃO EXECUTIVA")
+    st.title(f"TENDA — {brand_name}")
+    st.write(
+        f"Bem-vindo(a), {display_name}. "
+        "Acompanhe o desempenho consolidado das campanhas."
     )
+    st.caption(f"Safra 12 meses · {caption_period}")
 
     if brand_df.empty:
         st.info("Nenhum dado encontrado ainda. Faça upload de um XLSX para popular esta marca.")
