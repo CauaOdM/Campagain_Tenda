@@ -32,7 +32,7 @@ TENDA_COLORS = {
     "cinza_azulado": "#8c8cac",
 }
 
-st.markdown(
+st.html(
     f"""
     <style>
         :root {{
@@ -150,20 +150,51 @@ st.markdown(
             border-color: rgba(255, 255, 255, 0.55);
         }}
 
-        [data-testid="stSidebar"] .stButton > button {{
+        [data-testid="stSidebar"] .stButton > button,
+        [data-testid="stSidebar"] [data-testid="stButton"] > button,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-secondary"],
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-primary"],
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-tertiary"] {{
             width: 100%;
             min-height: 42px;
-            background: rgba(255, 255, 255, 0.09);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.32);
+            background: rgba(255, 255, 255, 0.09) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.32) !important;
             border-radius: 8px;
             font-weight: 650;
+            box-shadow: none !important;
         }}
 
-        [data-testid="stSidebar"] .stButton > button:hover {{
-            background: var(--tenda-red);
-            border-color: var(--tenda-red);
-            color: #ffffff;
+        [data-testid="stSidebar"] .stButton > button p,
+        [data-testid="stSidebar"] .stButton > button span,
+        [data-testid="stSidebar"] [data-testid="stButton"] > button p,
+        [data-testid="stSidebar"] [data-testid="stButton"] > button span,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-secondary"] p,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-secondary"] span,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-primary"] p,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-primary"] span,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-tertiary"] p,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-tertiary"] span {{
+            color: #ffffff !important;
+        }}
+
+        [data-testid="stSidebar"] .stButton > button:hover,
+        [data-testid="stSidebar"] [data-testid="stButton"] > button:hover,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-secondary"]:hover,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-primary"]:hover,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-tertiary"]:hover {{
+            background: var(--tenda-red) !important;
+            border-color: var(--tenda-red) !important;
+            color: #ffffff !important;
+        }}
+
+        [data-testid="stSidebar"] .stButton > button:focus-visible,
+        [data-testid="stSidebar"] [data-testid="stButton"] > button:focus-visible,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-secondary"]:focus-visible,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-primary"]:focus-visible,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-tertiary"]:focus-visible {{
+            outline: 3px solid rgba(255, 255, 255, 0.34);
+            outline-offset: 2px;
         }}
 
         /* Hierarquia tipográfica */
@@ -646,7 +677,6 @@ st.markdown(
         }}
     </style>
     """,
-    unsafe_allow_html=True,
 )
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -772,18 +802,18 @@ def _metric_card(label, value, detail=None, tone="neutral"):
     if detail:
         detail_html = f'<div class="kpi-detail {escape(tone)}">{escape(detail)}</div>'
 
-    return f"""
-        <article class="kpi-card">
-            <div class="kpi-label">{escape(label)}</div>
-            <div class="kpi-value" title="{escape(value)}">{escape(value)}</div>
-            {detail_html}
-        </article>
-    """
+    return (
+        '<article class="kpi-card">'
+        f'<div class="kpi-label">{escape(label)}</div>'
+        f'<div class="kpi-value" title="{escape(value)}">{escape(value)}</div>'
+        f'{detail_html}'
+        '</article>'
+    )
 
 
 def _render_metric_grid(cards):
     cards_html = "".join(_metric_card(**card) for card in cards)
-    st.markdown(f'<section class="kpi-grid">{cards_html}</section>', unsafe_allow_html=True)
+    st.html(f'<section class="kpi-grid">{cards_html}</section>')
 
 
 def _safe_month_options(brand_name):
@@ -851,11 +881,11 @@ def dashboard():
     else:
         caption_period = "Sem período disponível"
 
-    display_name = getattr(st.user, "name", None) or "usuário"
+    display_name = str(getattr(st.user, "name", None) or "usuário")
     brand_name = st.session_state.selected_brand.upper()
 
     st.image(str(logo_path), use_container_width=True)
-    st.markdown(
+    st.html(
         f"""
         <section class="dashboard-intro">
             <div>
@@ -869,7 +899,6 @@ def dashboard():
             </div>
         </section>
         """,
-        unsafe_allow_html=True,
     )
 
     if brand_df.empty:
